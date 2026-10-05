@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>Заявки — Flowdesk</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7fb;
+      --surface: #fff;
+      --surface-soft: #fafbfe;
+      --text: #202438;
+      --muted: #858ba0;
+      --line: #eceef4;
+      --purple: #6658d3;
+      --purple-dark: #5144bd;
+      --purple-soft: #f0efff;
+      --green: #19896a;
+      --green-soft: #e9f7f1;
+      --orange: #bd7622;
+      --orange-soft: #fff5e7;
+      --red: #c35061;
+      --red-soft: #fff0f1;
+      --shadow: 0 8px 28px rgba(31, 38, 68, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); color: var(--text); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 5; display: flex; width: 244px; flex-direction: column;
+      padding: 27px 17px 20px; background: var(--surface); border-right: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 11px; color: var(--text); font-size: 19px; font-weight: 750; letter-spacing: -.6px; }
+    .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; background: var(--purple); color: #fff; }
+    .brand-mark svg { width: 20px; height: 20px; }
+    .workspace { display: flex; align-items: center; gap: 11px; margin: 36px 3px 29px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+    .workspace-logo { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: #f9e8dc; color: #a55d33; font-size: 13px; font-weight: 750; }
+    .workspace-name { min-width: 0; flex: 1; }
+    .workspace-name strong, .workspace-name span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .workspace-name strong { font-size: 12px; font-weight: 650; }
+    .workspace-name span { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .chevron { color: #a4a8b7; font-size: 17px; }
+    .nav-label { padding: 0 12px 10px; color: #a1a5b5; font-size: 10px; font-weight: 750; letter-spacing: 1px; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; min-height: 43px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: #757b90; text-align: left; font-size: 13px; font-weight: 550; }
+    .nav-item svg { width: 18px; height: 18px; color: #989db0; }
+    .nav-item.active { background: var(--purple-soft); color: var(--purple-dark); font-weight: 650; }
+    .nav-item.active svg { color: var(--purple); }
+    .nav-count { margin-left: auto; color: var(--purple); font-size: 11px; font-weight: 700; }
+    .sidebar-bottom { margin-top: auto; }
+    .help-card { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
+    .help-card strong { display: block; font-size: 12px; }
+    .help-card p { margin: 6px 0 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .help-card button { padding: 0; border: 0; background: none; color: var(--purple); font-size: 11px; font-weight: 650; }
+    .profile { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding: 11px 6px 0; border-top: 1px solid var(--line); }
+    .avatar { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #e7e9f7; color: #535b8c; font-size: 11px; font-weight: 700; }
+    .profile-info { flex: 1; }
+    .profile-info strong, .profile-info span { display: block; }
+    .profile-info strong { font-size: 12px; font-weight: 650; }
+    .profile-info span { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .main { min-height: 100vh; margin-left: 244px; }
+    .topbar { display: flex; height: 72px; align-items: center; justify-content: flex-end; gap: 20px; padding: 0 46px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .topbar-note { color: var(--muted); font-size: 12px; }
+    .icon-button { position: relative; display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: #72788e; }
+    .icon-button svg { width: 17px; height: 17px; }
+    .notification-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border: 1px solid white; border-radius: 50%; background: #ed7d72; }
+    .content { max-width: 1440px; margin: 0 auto; padding: 39px 46px 56px; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+    .eyebrow { margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    h1 { margin: 0; font-size: 27px; font-weight: 700; letter-spacing: -.8px; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+    .database-notice { display: flex; align-items: flex-start; gap: 10px; margin-top: 19px; padding: 12px 14px; border: 1px solid #f0d6bc; border-radius: 9px; background: #fff8ef; color: #875522; font-size: 11px; line-height: 1.55; }
+    .database-notice strong { font-weight: 700; }
+    .database-notice p { margin: 0; }
+    .connection-state { display: flex; align-items: center; gap: 7px; margin-top: 17px; color: #898ea0; font-size: 11px; }
+    .connection-state::before { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: #c5c8d2; content: ""; }
+    .connection-state[data-state="connected"] { color: var(--green); }
+    .connection-state[data-state="connected"]::before { background: var(--green); }
+    .connection-state[data-state="error"] { color: var(--red); }
+    .connection-state[data-state="error"]::before { background: var(--red); }
+    .primary-button:disabled { transform: none; cursor: not-allowed; opacity: .55; }
+    .primary-button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 0; border-radius: 9px; background: var(--purple); box-shadow: 0 4px 10px rgba(102, 88, 211, .17); color: #fff; font-size: 12px; font-weight: 650; transition: background .15s, transform .15s; }
+    .primary-button:hover { transform: translateY(-1px); background: var(--purple-dark); }
+    .primary-button svg { width: 16px; height: 16px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+    .stat-card { position: relative; min-height: 118px; padding: 18px 19px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 2px 8px rgba(31, 38, 68, .02); }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 550; }
+    .stat-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px; background: var(--purple-soft); color: var(--purple); }
+    .stat-icon svg { width: 16px; height: 16px; }
+    .stat-number { margin-top: 11px; font-size: 25px; font-weight: 720; letter-spacing: -.8px; }
+    .stat-hint { margin-left: 8px; color: #a2a6b4; font-size: 10px; font-weight: 450; letter-spacing: 0; }
+    .stat-card:nth-child(2) .stat-icon { background: #fff4e6; color: #d28b31; }
+    .stat-card:nth-child(3) .stat-icon { background: #eaf3ff; color: #4c8cd3; }
+    .stat-card:nth-child(4) .stat-icon { background: var(--green-soft); color: var(--green); }
+    .table-card { margin-top: 27px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+    .table-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px 21px 17px; }
+    .table-title { display: flex; align-items: center; gap: 9px; }
+    .table-title h2 { margin: 0; font-size: 14px; font-weight: 680; }
+    .total-badge { display: grid; min-width: 23px; height: 21px; place-items: center; padding: 0 6px; border-radius: 6px; background: #f1f2f6; color: #7d8295; font-size: 10px; font-weight: 650; }
+    .filters { display: flex; align-items: center; gap: 9px; }
+    .search-box { position: relative; }
+    .search-box svg { position: absolute; top: 10px; left: 10px; width: 15px; height: 15px; color: #a3a7b5; pointer-events: none; }
+    .search-box input, .filter-select { height: 36px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: #fff; color: var(--text); font-size: 11px; }
+    .search-box input { width: 205px; padding: 0 10px 0 32px; }
+    .search-box input::placeholder { color: #a5a9b7; }
+    .search-box input:focus, .filter-select:focus { border-color: #aaa1ee; box-shadow: 0 0 0 3px rgba(102, 88, 211, .08); }
+    .filter-select { min-width: 135px; padding: 0 28px 0 10px; }
+    .export-button { display: inline-flex; height: 36px; align-items: center; gap: 7px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #70768a; font-size: 11px; font-weight: 550; }
+    .export-button:hover, .icon-button:hover, .row-action:hover { background: var(--surface-soft); }
+    .export-button svg { width: 14px; height: 14px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead { background: #fbfbfd; }
+    th { height: 39px; padding: 0 18px; border-top: 1px solid #f0f1f5; border-bottom: 1px solid #f0f1f5; color: #9a9eae; font-size: 9px; font-weight: 700; letter-spacing: .65px; text-transform: uppercase; white-space: nowrap; }
+    td { height: 68px; padding: 9px 18px; border-bottom: 1px solid #f1f2f6; color: #53596c; font-size: 11px; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fdfdff; }
+    .requester { display: flex; min-width: 190px; align-items: center; gap: 10px; }
+    .requester-avatar { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; background: #f0efff; color: #6658c6; font-size: 10px; font-weight: 700; }
+    .requester strong, .requester span { display: block; }
+    .requester strong { max-width: 175px; overflow: hidden; color: #303448; font-size: 11px; font-weight: 650; text-overflow: ellipsis; }
+    .requester span { max-width: 175px; margin-top: 4px; overflow: hidden; color: #a0a4b2; font-size: 10px; text-overflow: ellipsis; }
+    .service-cell { color: #454b5f; font-weight: 550; }
+    .date-cell { color: #858a9c; }
+    .status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+    .status-new { background: var(--purple-soft); color: #685bcc; }
+    .status-progress { background: #edf5ff; color: #477eb7; }
+    .status-done { background: var(--green-soft); color: #218367; }
+    .status-cancelled { background: var(--red-soft); color: #c05261; }
+    .actions-cell { width: 60px; text-align: right; }
+    .row-action { display: inline-grid; width: 29px; height: 29px; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #9095a7; font-size: 19px; line-height: 1; }
+    .empty-state { padding: 62px 20px 68px; text-align: center; }
+    .empty-icon { display: grid; width: 48px; height: 48px; margin: 0 auto 14px; place-items: center; border-radius: 14px; background: #f2f1ff; color: var(--purple); }
+    .empty-icon svg { width: 23px; height: 23px; }
+    .empty-state h3 { margin: 0; font-size: 13px; font-weight: 650; }
+    .empty-state p { max-width: 300px; margin: 7px auto 17px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .empty-state .primary-button { min-height: 36px; font-size: 11px; }
+    .table-footer { display: flex; min-height: 47px; align-items: center; justify-content: space-between; padding: 0 20px; border-top: 1px solid #f0f1f5; color: #969aaa; font-size: 10px; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: rgba(31, 35, 57, .38); backdrop-filter: blur(2px); }
+    .modal-backdrop[hidden] { display: none; }
+    .modal { width: min(100%, 510px); max-height: min(92vh, 760px); overflow-y: auto; border: 1px solid rgba(255,255,255,.75); border-radius: 15px; background: #fff; box-shadow: 0 22px 70px rgba(28, 32, 61, .19); }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid var(--line); }
+    .modal-header h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+    .modal-header p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+    .close-button { display: grid; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #9297a7; font-size: 20px; }
+    .close-button:hover { background: #f5f5f9; }
+    .form { padding: 20px 24px 24px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 13px; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { display: block; margin-bottom: 7px; color: #555b70; font-size: 11px; font-weight: 600; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 39px; padding: 9px 11px; border: 1px solid #e6e8ef; border-radius: 8px; outline: none; background: #fff; color: var(--text); font-size: 11px; }
+    .field textarea { min-height: 83px; resize: vertical; }
+    .field input::placeholder, .field textarea::placeholder { color: #adb1bf; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #aaa1ee; box-shadow: 0 0 0 3px rgba(102, 88, 211, .08); }
+    .form-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 21px; }
+    .delete-button { min-height: 38px; padding: 0 12px; border: 1px solid #f0dfe2; border-radius: 8px; background: white; color: var(--red); font-size: 11px; font-weight: 600; }
+    .delete-button:hover { background: var(--red-soft); }
+    .form-actions { display: flex; gap: 8px; margin-left: auto; }
+    .secondary-button { min-height: 38px; padding: 0 13px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #70768a; font-size: 11px; font-weight: 600; }
+    .form-actions .primary-button { min-height: 38px; font-size: 11px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 20; padding: 12px 17px; transform: translateY(15px); border: 1px solid #d6eee5; border-radius: 10px; background: #fff; box-shadow: var(--shadow); color: #24765f; font-size: 12px; opacity: 0; pointer-events: none; transition: .2s ease; }
+    .toast.visible { transform: translateY(0); opacity: 1; }
+    .mobile-menu { display: none; }
+    @media (max-width: 1050px) {
+      .sidebar { width: 215px; }
+      .main { margin-left: 215px; }
+      .content { padding-right: 28px; padding-left: 28px; }
+      .topbar { padding-right: 28px; }
+      .stats { gap: 11px; }
+      .stat-card { padding: 15px; }
+      .table-heading { align-items: flex-start; flex-direction: column; }
+      .filters { width: 100%; }
+      .search-box { flex: 1; }
+      .search-box input { width: 100%; }
+    }
+    @media (max-width: 760px) {
+      .sidebar { width: 64px; align-items: center; padding: 18px 8px; }
+      .brand { padding: 0; }
+      .brand > span:last-child, .workspace, .nav-label, .nav-item > span:not(.nav-count), .nav-count, .sidebar-bottom { display: none; }
+      .nav { margin-top: 34px; }
+      .nav-item { width: 44px; justify-content: center; padding: 0; }
+      .main { margin-left: 64px; }
+      .topbar { height: 59px; padding: 0 18px; }
+      .topbar-note { display: none; }
+      .content { padding: 28px 18px 38px; }
+      .page-heading { align-items: center; }
+      h1 { font-size: 23px; }
+      .subtitle { max-width: 260px; font-size: 11px; line-height: 1.5; }
+      .page-heading > .primary-button { min-width: 42px; width: 42px; padding: 0; font-size: 0; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 21px; }
+      .stat-card { min-height: 105px; padding: 13px; }
+      .stat-number { font-size: 22px; }
+      .table-card { margin-top: 19px; }
+      .table-heading { padding: 17px 14px 13px; }
+      .filters { flex-wrap: wrap; gap: 7px; }
+      .filter-select { flex: 1; min-width: 115px; }
+      .export-button { flex: 0 0 auto; }
+      th, td { padding-right: 13px; padding-left: 13px; }
+      .table-footer { padding: 0 13px; }
+    }
+    @media (max-width: 440px) {
+      .content { padding-right: 12px; padding-left: 12px; }
+      .filters .search-box { flex-basis: 100%; }
+      .filter-select { flex: 1; }
+      .export-button { flex: 1; justify-content: center; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .modal-header { padding: 18px 18px 15px; }
+      .form { padding: 17px 18px 20px; }
+      .form-footer { align-items: stretch; flex-direction: column-reverse; }
+      .form-actions { width: 100%; }
+      .form-actions button { flex: 1; }
+      .delete-button { align-self: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Боковая панель">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 12 4l7 3.5v9L12 20l-7-3.5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m5.5 7.8 6.5 3.4 6.5-3.4M12 11.4v7.8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </span>
+        <span>flowdesk</span>
+      </div>
+      <div class="workspace">
+        <div class="workspace-logo">FD</div>
+        <div class="workspace-name"><strong>Моя компания</strong><span>Рабочее пространство</span></div>
+        <span class="chevron" aria-hidden="true">⌄</span>
+      </div>
+      <div class="nav-label">Рабочая область</div>
+      <nav class="nav" aria-label="Основная навигация">
+        <button class="nav-item active" type="button" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5.5h14v3H5zM5 10.5h14v3H5zM5 15.5h9v3H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Заявки</span><span class="nav-count" id="nav-count">0</span>
+        </button>
+        <button class="nav-item" type="button" id="export-nav">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19h14M12 4v10m0 0 4-4m-4 4-4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Экспорт данных</span>
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <strong>Нужна помощь?</strong>
+          <p>База заявок подключена к Supabase и доступна на опубликованном сайте.</p>
+          <button type="button" id="help-export">Экспортировать данные →</button>
+        </div>
+        <div class="profile">
+          <div class="avatar">АД</div>
+          <div class="profile-info"><strong>Администратор</strong><span>Личный кабинет</span></div>
+          <span class="chevron" aria-hidden="true">···</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <span class="topbar-note" id="today-label"></span>
+        <button class="icon-button" type="button" aria-label="Уведомления">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notification-dot"></span>
+        </button>
+      </header>
+
+      <section class="content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">РАБОЧАЯ ОБЛАСТЬ&nbsp; / &nbsp;ЗАЯВКИ</div>
+            <h1>Заявки</h1>
+            <p class="subtitle">Управляйте обращениями клиентов в одном месте</p>
+          </div>
+          <button class="primary-button" type="button" id="add-button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Добавить заявку
+          </button>
+        </div>
+        <div class="database-notice" role="alert"><p><strong>Внимание: база публичная.</strong> Любой посетитель сайта может просматривать, добавлять, изменять и удалять заявки. Не храните здесь реальные персональные данные.</p></div>
+        <div class="connection-state" id="connection-state" data-state="loading" role="status" aria-live="polite">Подключаемся к Supabase…</div>
+
+        <section class="stats" aria-label="Статистика заявок">
+          <article class="stat-card">
+            <div class="stat-top"><span>Всего заявок</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5.5h14v13H5zM8 9h8M8 12h8M8 15h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="stat-number" id="stat-total">0 <span class="stat-hint">за всё время</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span>Новые</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div>
+            <div class="stat-number" id="stat-new">0 <span class="stat-hint">ожидают ответа</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span>В работе</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
+            <div class="stat-number" id="stat-progress">0 <span class="stat-hint">обрабатываются</span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span>Завершено</span><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="stat-number" id="stat-done">0 <span class="stat-hint">успешно закрыты</span></div>
+          </article>
+        </section>
+
+        <section class="table-card" aria-label="Список заявок">
+          <div class="table-heading">
+            <div class="table-title"><h2>Все заявки</h2><span class="total-badge" id="table-count">0</span></div>
+            <div class="filters">
+              <label class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="search" id="search-input" placeholder="Поиск по заявкам..." aria-label="Поиск по заявкам">
+              </label>
+              <select class="filter-select" id="status-filter" aria-label="Фильтр по статусу">
+                <option value="">Все статусы</option>
+                <option value="new">Новая</option>
+                <option value="progress">В работе</option>
+                <option value="done">Завершена</option>
+                <option value="cancelled">Отменена</option>
+              </select>
+              <button class="export-button" type="button" id="export-button">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Экспорт
+              </button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Клиент</th><th>Услуга</th><th>Дата создания</th><th>Статус</th><th aria-label="Действия"></th></tr></thead>
+              <tbody id="requests-body"></tbody>
+            </table>
+            <div class="empty-state" id="empty-state">
+              <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4.5h9l4 4v11H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4.5v5h5M9 13h7m-7 3h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+              <h3 id="empty-title">Пока нет заявок</h3>
+              <p id="empty-copy">Добавьте первую заявку, чтобы начать вести базу обращений клиентов.</p>
+              <button class="primary-button" id="empty-add-button" type="button">Добавить заявку</button>
+            </div>
+          </div>
+          <div class="table-footer"><span id="table-summary">Нет записей</span><span>Данные сохраняются автоматически</span></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <div><h2 id="modal-title">Новая заявка</h2><p>Заполните информацию о клиенте и обращении</p></div>
+        <button class="close-button" type="button" id="close-modal" aria-label="Закрыть">×</button>
+      </div>
+      <form class="form" id="request-form">
+        <div class="form-grid">
+          <div class="field"><label for="client-name">Имя клиента *</label><input id="client-name" name="name" autocomplete="name" placeholder="Например, Анна Иванова" required maxlength="100"></div>
+          <div class="field"><label for="client-phone">Телефон *</label><input id="client-phone" name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required maxlength="30"></div>
+          <div class="field"><label for="client-email">Электронная почта</label><input id="client-email" name="email" type="email" autocomplete="email" placeholder="name@example.ru" maxlength="120"></div>
+          <div class="field"><label for="service-name">Услуга *</label><input id="service-name" name="service" placeholder="Например, консультация" required maxlength="100"></div>
+          <div class="field"><label for="request-status">Статус</label><select id="request-status" name="status"><option value="new">Новая</option><option value="progress">В работе</option><option value="done">Завершена</option><option value="cancelled">Отменена</option></select></div>
+          <div class="field"><label for="request-date">Дата создания</label><input id="request-date" name="date" type="date" required></div>
+          <div class="field full"><label for="request-note">Комментарий</label><textarea id="request-note" name="note" placeholder="Дополнительная информация по заявке..." maxlength="1000"></textarea></div>
+        </div>
+        <div class="form-footer">
+          <button class="delete-button" id="delete-button" type="button" hidden>Удалить заявку</button>
+          <div class="form-actions"><button class="secondary-button" id="cancel-button" type="button">Отмена</button><button class="primary-button" type="submit" id="save-button">Сохранить заявку</button></div>
+        </div>
+      </form>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="./supabase-config.js"></script>
+  <script>
+    (() => {
+      "use strict";
+      const config = window.FLOWDESK_SUPABASE || {};
+      const supabaseUrl = typeof config.url === "string" ? config.url.trim().replace(/\/+$/, "") : "";
+      const supabaseAnonKey = typeof config.anonKey === "string" ? config.anonKey.trim() : "";
+      const configurationReady = Boolean(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes("YOUR_PROJECT") && !supabaseAnonKey.includes("YOUR_ANON_KEY"));
+      const tableUrl = configurationReady ? `${supabaseUrl}/rest/v1/requests` : "";
+      const statuses = {
+        new: { label: "Новая", className: "status-new" },
+        progress: { label: "В работе", className: "status-progress" },
+        done: { label: "Завершена", className: "status-done" },
+        cancelled: { label: "Отменена", className: "status-cancelled" }
+      };
+      const elements = {
+        body: document.getElementById("requests-body"),
+        empty: document.getElementById("empty-state"),
+        emptyTitle: document.getElementById("empty-title"),
+        emptyCopy: document.getElementById("empty-copy"),
+        search: document.getElementById("search-input"),
+        filter: document.getElementById("status-filter"),
+        modal: document.getElementById("modal-backdrop"),
+        form: document.getElementById("request-form"),
+        title: document.getElementById("modal-title"),
+        delete: document.getElementById("delete-button"),
+        toast: document.getElementById("toast")
+      };
+      let requests = [];
+      let editingId = null;
+      let toastTimer;
+      let backendReady = false;
+
+      async function supabaseRequest(path, options = {}) {
+        const headers = {
+          apikey: supabaseAnonKey,
+          "Content-Type": "application/json",
+          ...options.headers
+        };
+        if (supabaseAnonKey.startsWith("eyJ")) {
+          headers.Authorization = `Bearer ${supabaseAnonKey}`;
+        }
+        const response = await fetch(`${tableUrl}${path}`, {
+          ...options,
+          headers
+        });
+        if (!response.ok) {
+          let details = "";
+          try {
+            const body = await response.json();
+            details = body.message || body.details || body.hint || "";
+          } catch (error) {
+            console.error("Не удалось прочитать ответ Supabase.", error);
+          }
+          throw new Error(details || `Supabase вернул HTTP ${response.status}.`);
+        }
+        if (response.status === 204) return null;
+        return response.json();
+      }
+
+      async function loadRequests() {
+        const rows = await supabaseRequest("?select=id,name,phone,email,service,status,request_date,note,created_at&order=created_at.desc");
+        if (!Array.isArray(rows)) throw new Error("Supabase вернул данные в неожиданном формате.");
+        return rows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          phone: row.phone,
+          email: row.email || "",
+          service: row.service,
+          status: statuses[row.status] ? row.status : "new",
+          date: row.request_date,
+          note: row.note || ""
+        }));
+      }
+
+      function setConnectionState(state, message) {
+        const status = document.getElementById("connection-state");
+        status.dataset.state = state;
+        status.textContent = message;
+      }
+
+      async function refreshRequests({ silent = false } = {}) {
+        try {
+          requests = await loadRequests();
+          backendReady = true;
+          setConnectionState("connected", "Подключено к Supabase · данные синхронизированы");
+          render();
+          return true;
+        } catch (error) {
+          backendReady = false;
+          setConnectionState("error", "Ошибка соединения с Supabase: " + error.message);
+          console.error("Не удалось загрузить заявки из Supabase.", error);
+          if (!silent) showToast("Не удалось загрузить заявки. Проверьте настройки Supabase.");
+          return false;
+        }
+      }
+
+      async function createRequest(request) {
+        await supabaseRequest("", {
+          method: "POST",
+          headers: { Prefer: "return=minimal" },
+          body: JSON.stringify({
+            name: request.name,
+            phone: request.phone,
+            email: request.email || null,
+            service: request.service,
+            status: request.status,
+            request_date: request.date,
+            note: request.note || ""
+          })
+        });
+      }
+
+      async function updateRequest(request) {
+        await supabaseRequest(`?id=eq.${encodeURIComponent(request.id)}`, {
+          method: "PATCH",
+          headers: { Prefer: "return=minimal" },
+          body: JSON.stringify({
+            name: request.name,
+            phone: request.phone,
+            email: request.email || null,
+            service: request.service,
+            status: request.status,
+            request_date: request.date,
+            note: request.note || ""
+          })
+        });
+      }
+
+      function dateValue(date) {
+        const d = new Date(date);
+        if (Number.isNaN(d.getTime())) return "";
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+
+      function formatDate(value) {
+        const parts = value.split("-").map(Number);
+        if (parts.length !== 3 || parts.some(Number.isNaN)) return value;
+        return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", year: "numeric" }).format(new Date(parts[0], parts[1] - 1, parts[2]));
+      }
+
+      function initials(name) {
+        return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("ru-RU") || "?";
+      }
+
+      function createCell(text, className) {
+        const cell = document.createElement("td");
+        if (className) cell.className = className;
+        cell.textContent = text;
+        return cell;
+      }
+
+      function render() {
+        const query = elements.search.value.trim().toLocaleLowerCase("ru-RU");
+        const status = elements.filter.value;
+        const filtered = requests.filter((request) => {
+          const searchable = [request.name, request.phone, request.email, request.service, request.note].join(" ").toLocaleLowerCase("ru-RU");
+          return (!status || request.status === status) && (!query || searchable.includes(query));
+        }).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+
+        elements.body.replaceChildren();
+        filtered.forEach((request) => {
+          const row = document.createElement("tr");
+          const personCell = document.createElement("td");
+          const person = document.createElement("div");
+          const avatar = document.createElement("div");
+          const info = document.createElement("div");
+          const name = document.createElement("strong");
+          const phone = document.createElement("span");
+          person.className = "requester";
+          avatar.className = "requester-avatar";
+          avatar.textContent = initials(request.name);
+          name.textContent = request.name;
+          phone.textContent = request.phone;
+          info.append(name, phone);
+          person.append(avatar, info);
+          personCell.append(person);
+          row.append(personCell, createCell(request.service, "service-cell"), createCell(formatDate(request.date), "date-cell"));
+
+          const statusCell = document.createElement("td");
+          const badge = document.createElement("span");
+          badge.className = `status ${statuses[request.status].className}`;
+          badge.textContent = statuses[request.status].label;
+          statusCell.append(badge);
+          row.append(statusCell);
+
+          const actions = document.createElement("td");
+          actions.className = "actions-cell";
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "row-action";
+          edit.setAttribute("aria-label", `Редактировать заявку: ${request.name}`);
+          edit.title = "Редактировать заявку";
+          edit.textContent = "···";
+          edit.addEventListener("click", () => openModal(request.id));
+          actions.append(edit);
+          row.append(actions);
+          elements.body.append(row);
+        });
+
+        const total = requests.length;
+        document.getElementById("stat-total").firstChild.textContent = total;
+        document.getElementById("stat-new").firstChild.textContent = requests.filter((item) => item.status === "new").length;
+        document.getElementById("stat-progress").firstChild.textContent = requests.filter((item) => item.status === "progress").length;
+        document.getElementById("stat-done").firstChild.textContent = requests.filter((item) => item.status === "done").length;
+        document.getElementById("nav-count").textContent = total;
+        document.getElementById("table-count").textContent = filtered.length;
+        elements.empty.hidden = filtered.length > 0;
+        if (total > 0 && filtered.length === 0) {
+          elements.emptyTitle.textContent = "Ничего не найдено";
+          elements.emptyCopy.textContent = "Попробуйте изменить поисковый запрос или выбрать другой статус.";
+          document.getElementById("empty-add-button").hidden = true;
+        } else {
+          elements.emptyTitle.textContent = "Пока нет заявок";
+          elements.emptyCopy.textContent = "Добавьте первую заявку, чтобы начать вести базу обращений клиентов.";
+          document.getElementById("empty-add-button").hidden = false;
+        }
+        document.getElementById("table-summary").textContent = filtered.length
+          ? `Показано ${filtered.length} из ${total}`
+          : total ? "Нет подходящих записей" : "Нет записей";
+        document.getElementById("add-button").disabled = !backendReady;
+        document.getElementById("empty-add-button").disabled = !backendReady;
+      }
+
+      function openModal(id) {
+        if (!backendReady) {
+          showToast("Сначала настройте подключение к Supabase");
+          return;
+        }
+        editingId = id || null;
+        elements.form.reset();
+        const request = id ? requests.find((item) => item.id === id) : null;
+        elements.title.textContent = request ? "Редактировать заявку" : "Новая заявка";
+        document.getElementById("save-button").textContent = request ? "Сохранить изменения" : "Сохранить заявку";
+        elements.delete.hidden = !request;
+        document.getElementById("client-name").value = request ? request.name : "";
+        document.getElementById("client-phone").value = request ? request.phone : "";
+        document.getElementById("client-email").value = request ? request.email || "" : "";
+        document.getElementById("service-name").value = request ? request.service : "";
+        document.getElementById("request-status").value = request ? request.status : "new";
+        document.getElementById("request-date").value = request ? request.date : dateValue(new Date());
+        document.getElementById("request-note").value = request ? request.note || "" : "";
+        elements.modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        document.getElementById("client-name").focus();
+      }
+
+      function closeModal() {
+        elements.modal.hidden = true;
+        document.body.style.overflow = "";
+        editingId = null;
+      }
+
+      function showToast(message) {
+        elements.toast.textContent = message;
+        elements.toast.classList.add("visible");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => elements.toast.classList.remove("visible"), 3000);
+      }
+
+      function escapeCsv(value) {
+        return `"${String(value || "").replace(/"/g, '""')}"`;
+      }
+
+      function exportCsv() {
+        if (!backendReady) {
+          showToast("Сначала настройте подключение к Supabase");
+          return;
+        }
+        const headings = ["Имя клиента", "Телефон", "Электронная почта", "Услуга", "Статус", "Дата создания", "Комментарий"];
+        const rows = requests.slice().sort((a, b) => b.date.localeCompare(a.date)).map((item) => [
+          item.name, item.phone, item.email, item.service, statuses[item.status].label, item.date, item.note
+        ]);
+        const csv = "\uFEFF" + [headings, ...rows].map((row) => row.map(escapeCsv).join(";")).join("\r\n");
+        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `zayavki-${dateValue(new Date())}.csv`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast("Экспорт заявок подготовлен");
+      }
+
+      document.getElementById("add-button").addEventListener("click", () => openModal());
+      document.getElementById("empty-add-button").addEventListener("click", () => openModal());
+      document.getElementById("close-modal").addEventListener("click", closeModal);
+      document.getElementById("cancel-button").addEventListener("click", closeModal);
+      document.getElementById("export-button").addEventListener("click", exportCsv);
+      document.getElementById("export-nav").addEventListener("click", exportCsv);
+      document.getElementById("help-export").addEventListener("click", exportCsv);
+      elements.search.addEventListener("input", render);
+      elements.filter.addEventListener("change", render);
+      window.setInterval(() => {
+        if (backendReady && elements.modal.hidden && document.visibilityState === "visible") {
+          refreshRequests({ silent: true });
+        }
+      }, 30000);
+      elements.modal.addEventListener("click", (event) => {
+        if (event.target === elements.modal) closeModal();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !elements.modal.hidden) closeModal();
+      });
+      elements.delete.addEventListener("click", async () => {
+        if (!editingId) return;
+        const request = requests.find((item) => item.id === editingId);
+        if (!request || !window.confirm(`Удалить заявку клиента «${request.name}»?`)) return;
+        elements.delete.disabled = true;
+        try {
+          await supabaseRequest(`?id=eq.${encodeURIComponent(editingId)}`, {
+            method: "DELETE",
+            headers: { Prefer: "return=minimal" }
+          });
+          closeModal();
+          await refreshRequests();
+          showToast("Заявка удалена");
+        } catch (error) {
+          console.error("Не удалось удалить заявку в Supabase.", error);
+          showToast("Не удалось удалить заявку: " + error.message);
+        } finally {
+          elements.delete.disabled = false;
+        }
+      });
+      elements.form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!elements.form.reportValidity()) return;
+        const values = new FormData(elements.form);
+        const request = {
+          id: editingId,
+          name: String(values.get("name")).trim(),
+          phone: String(values.get("phone")).trim(),
+          email: String(values.get("email")).trim(),
+          service: String(values.get("service")).trim(),
+          status: String(values.get("status")),
+          date: String(values.get("date")),
+          note: String(values.get("note")).trim()
+        };
+        if (!request.name || !request.phone || !request.service || !statuses[request.status] || !request.date) {
+          showToast("Проверьте заполнение обязательных полей");
+          return;
+        }
+        const wasEditing = Boolean(editingId);
+        const saveButton = document.getElementById("save-button");
+        saveButton.disabled = true;
+        try {
+          if (wasEditing) await updateRequest(request);
+          else await createRequest(request);
+          closeModal();
+          if (await refreshRequests()) showToast(wasEditing ? "Изменения сохранены" : "Заявка добавлена");
+        } catch (error) {
+          console.error("Не удалось сохранить заявку в Supabase.", error);
+          showToast("Не удалось сохранить заявку: " + error.message);
+        } finally {
+          saveButton.disabled = false;
+        }
+      });
+
+      document.getElementById("today-label").textContent = new Intl.DateTimeFormat("ru-RU", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      }).format(new Date());
+      render();
+      if (configurationReady) {
+        refreshRequests();
+      } else {
+        backendReady = false;
+        setConnectionState("error", "Supabase не настроен. Укажите URL проекта и anon/publishable key в supabase-config.js.");
+        showToast("Добавьте настройки Supabase в supabase-config.js");
+      }
+    })();
+  </script>
+</body>
+</html>
